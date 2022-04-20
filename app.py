@@ -16,7 +16,7 @@ import os
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 nlp = spacy.load("en_core_web_sm")
 
-st.markdown(f'<h1 style="color:#3D3D39;font-size:70px;">{"Loocretia"}</h1>', unsafe_allow_html=True)
+st.markdown(f'<h1 style="color:#FFFFFF;font-size:70px;">{"Loocretia"}</h1>', unsafe_allow_html=True)
 
 def run():
     word_def = []
