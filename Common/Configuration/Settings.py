@@ -21,7 +21,16 @@ class Settings:
     # ********************
     #  Static members
     # *********************
-    DefaultInstance = Settings()
+    __DefaultInstance = None
+
+    # *******************
+    #   Static methods
+    # *******************
+    @classmethod
+    def instance(cls):
+        if cls.__DefaultInstance is None:
+            cls.__DefaultInstance = cls.__new__(cls)
+        return cls.__DefaultInstance
 
     # ******************
     #   Constructor
@@ -47,7 +56,7 @@ class Settings:
     # ***************
     #  Operations
     # ***************
-    def read(self, ai_config_file_path: str = "", ai_force: bool = false) -> bool:
+    def read(self, ai_config_file_path: str = "", ai_force: bool = False) -> bool:
         """
         Parse the configuration file
         :param ai_config_file_path:
@@ -61,7 +70,7 @@ class Settings:
 
             # Decode the file => Json file
             # ********************************
-            if os.path.is_file(w_file_path):
+            if os.path.isfile(w_file_path):
                 with open(w_file_path, "r") as w_file:
                     w_json_data = json.load(w_file)
 
@@ -70,5 +79,21 @@ class Settings:
                     if (type(w_json_data) is dict) and (Settings.__Key in w_json_data.keys()):
                         self.__m_configuration = w_json_data[Settings.__Key]
                         self.__m_is_valid = True
+            else:
+                raise ValueError(f"The file path {w_file_path} is not a file")
 
         return self.__m_is_valid
+
+    def get(self, ai_key: str):
+        """
+        Retrieve a value in the settings
+        :param ai_key:
+        :return: value if found else None
+        """
+
+        w_value = None
+
+        if self.__m_is_valid and ai_key in self.__m_configuration.keys():
+            w_value = self.__m_configuration[ai_key]
+
+        return w_value
