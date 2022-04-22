@@ -12,8 +12,8 @@ import spacy
 import warnings
 warnings.catch_warnings()
 warnings.simplefilter("ignore")
-import os
-os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+# import os
+# os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 nlp = spacy.load("en_core_web_sm")
 
 st.markdown(f'<h1 style="color:#1E90FF;font-size:70px;">{"Loocretia"}</h1>', unsafe_allow_html=True)

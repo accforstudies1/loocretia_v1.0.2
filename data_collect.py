@@ -7,9 +7,8 @@ import credentials
 client = tweepy.Client(credentials.bearer_token)
 
 
-def twitter_queries(param1, param3):
-    query = ""+param1+" lang:en -is:retweet" 
-    param3 = 100
+def twitter_queries(param1, param3: int = 100):
+    query = ""+param1+" lang:en -is:retweet"
     
     tweets = client.search_recent_tweets(query=query, max_results = param3)
     tweet_text = []

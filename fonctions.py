@@ -7,6 +7,7 @@ import wikipedia
 import tweepy
 import credentials
 
+
 def summarization(data):
     tokenizer = PegasusTokenizer.from_pretrained("google/pegasus-xsum")
     model = PegasusForConditionalGeneration.from_pretrained("google/pegasus-xsum")
@@ -16,44 +17,37 @@ def summarization(data):
     return text
 
  
-def give_emoji_free_text(text):
-    allchars = [str for str in text]
-    emoji_list = [c for c in allchars if c in emoji.UNICODE_EMOJI]
-    clean_text = ' '.join([str for str in text.split() if not any(i in str for i in emoji_list)])
-    return clean_text
- 
-def simplify(text):
-	try:
-		text = unicode(text, 'utf-8')
-	except NameError:
-		pass
-	text = unicodedata.normalize('NFD', text).encode('ascii', 'ignore').decode("utf-8")
-	return str(text)
-   
- 
-def data_cleaning(data):
-    data = simplify(data)
-    data = give_emoji_free_text(data)
-    data = re.sub(r'''(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))''', " ", data)
-    return data
+def give_emoji_free_text(ai_text: str) -> str:
+    return emoji.get_emoji_regexp().sub(r"", ai_text)
+
+
+def simplify(ai_text: str) -> str:
+    return unicodedata.normalize('NFD', ai_text).encode('ascii', 'ignore').decode("utf-8")
+
+
+def data_cleaning(ai_data: str):
+    data = give_emoji_free_text(simplify(ai_data))
+    return re.sub(r'''(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))''', " ", data)
 
 
 def wiki_data(data):
-    definition  = wikipedia.summary(data, auto_suggest=False, sentences=2)
-    return definition
-        
-def sentiment_scores(sentence):
-    sid_obj = SentimentIntensityAnalyzer()
-    sentiment_dict = sid_obj.polarity_scores(sentence) 
-    return sentiment_dict
+    return wikipedia.summary(data, auto_suggest=False, sentences=2)
+
+
+def sentiment_scores(sentence: str) -> dict:
+    return SentimentIntensityAnalyzer().polarity_scores(sentence)
     
 
-def top_trends(country):
-    
-    auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret)
+def top_trends(ai_country: str):
+
+    # Retrieve API with user credentials
+    # *************************************
+    auth = tweepy.OAuth1UserHandler(credentials.consumer_key, credentials.consumer_secret)
     auth.set_access_token(credentials.access_token, credentials.access_token_secret)
     api = tweepy.API(auth)
     all_trends = api.available_trends()
+
+    
     for trend in all_trends:
         if trend['country'] == country:
             woeid = trend['woeid']
