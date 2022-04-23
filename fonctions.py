@@ -30,8 +30,10 @@ def sentiment_scores(sentence: str) -> dict:
 def top_trends(ai_country: str, ai_credentials: Credentials) -> list:
     # Retrieve API with user credentials
     # *************************************
-    w_auth = tweepy.OAuth1UserHandler(ai_credentials.user_key, ai_credentials.user_secret)
-    w_auth.set_access_token(ai_credentials.access_token, ai_credentials.access_token_secret)
+    w_auth = tweepy.OAuth1UserHandler(ai_credentials.user_key,
+                                      ai_credentials.user_secret,
+                                      ai_credentials.access_token,
+                                      ai_credentials.access_token_secret)
     w_api = tweepy.API(w_auth)
     w_top_10_trends = []
 

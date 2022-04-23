@@ -104,8 +104,10 @@ class Credentials:
             if {"key", "secret"} <= w_consumer_dict.keys():
                 self.__m_user_key = self.__check_value_type(w_consumer_dict["key"], str, "")
                 self.__m_user_secret = self.__check_value_type(w_consumer_dict["secret"], str, "")
+                print(f"User key : {self.__m_user_key}, User Secret : {self.__m_user_secret}")
                 self.__m_is_valid &= bool(self.__m_user_secret) and bool(self.__m_user_secret)
             else:
+                print("Consumer key has not been found")
                 self.__m_is_valid = False
         else:
             self.__m_is_valid = False
@@ -120,3 +122,4 @@ class Credentials:
                     self.__m_is_valid &= bool(self.__m_access_token) and bool(self.__m_access_token_secret)
             else:
                 self.__m_is_valid = False
+                print("Token key has not been found")

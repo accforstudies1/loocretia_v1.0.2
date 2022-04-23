@@ -11,22 +11,20 @@ import pandas as pd
 from datetime import date
 import spacy
 import warnings
-from Common import Credentials
+from Common import Credentials, CountriesTwitter
 
 warnings.catch_warnings()
 warnings.simplefilter("ignore")
 
-os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 nlp = spacy.load("en_core_web_sm")
 
 st.markdown(f'<h1 style="color:#3D3D39;font-size:70px;">{"Loocretia"}</h1>', unsafe_allow_html=True)
 
 
 def run():
-    word_def = []
     NER_ATTRS = ["text", "label_", "start", "end", "start_char", "end_char"]
-    today = date.today()
-    st.write(today.strftime("%B %d, %Y"))
+    st.write(date.today().strftime("%B %d, %Y"))
 
     def get_html(ai_resource_file: str, ai_html: str) -> str:
         """
@@ -88,6 +86,7 @@ def run():
         st.subheader("Some definitions :")
         new_doc = doc
         # print(new_doc.ents)
+        word_def = []
         for word in new_doc.ents:
             word_def.append(word.text)
 
@@ -111,14 +110,14 @@ def run():
         st.write("sentence was rated as ", sentiement_value['neu']*100, "% Neutral")
         st.write("sentence was rated as ", sentiement_value['pos']*100, "% Positive")
 
-        if sentiement_value['compound'] >= 0.05 :
-           st.markdown("People are sharing a positive opinion")
+        if sentiement_value['compound'] >= 0.05:
+            st.markdown("People are sharing a positive opinion")
      
-        elif sentiement_value['compound'] <= - 0.05 :
-           st.markdown("People are sharing a negative opinion")
+        elif sentiement_value['compound'] <= -0.05:
+            st.markdown("People are sharing a negative opinion")
 
         else:
-           st.markdown("People are neutral about the subject")
+            st.markdown("People are neutral about the subject")
 
 
 if __name__ == '__main__':
@@ -131,10 +130,13 @@ with st.sidebar:
 
     with st.form(key='Trends'):
         # Create a list of possible values and multiselect menu with them in it.
-        COUNTRIES_SELECTED = st.multiselect('Select countries [Top trending]',
-                                            pd.read_csv("datas/country.csv").unique())
-        submit_button = st.form_submit_button(label='Submit')
+        w_countries = CountriesTwitter("datas/country.csv")
+        if w_countries.is_valid:
+            w_countries_selected = st.multiselect('Select countries [Top trending]', w_countries.values)
 
-    if submit_button:
-        top_10 = top_trends(COUNTRIES_SELECTED[0], Credentials())
-        st.dataframe(pd.DataFrame(top_10, columns=['Trendings']))
+            if st.form_submit_button(label='Submit'):
+                st.dataframe(pd.DataFrame(top_trends(w_countries.get_id(w_countries_selected[0]), Credentials()),
+                                          columns=['Trendings']))
+        else:
+            print("Cannot read the csv containing the countries")
+

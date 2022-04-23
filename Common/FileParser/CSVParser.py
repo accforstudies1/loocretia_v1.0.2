@@ -31,30 +31,15 @@ class CSVParser(BaseParser):
 
         # Open and read the csv file
         # *******************************
-        with open(ai_file_path, "r", newline='') as w_file:
-            w_reader = csv.reader(w_file, delimiter=self.__m_delimiter, quotechar="\"")
-
+        with open(ai_file_path, "r", newline='', encoding="utf-8") as w_file:
             # Decode the first line
-            w_first_line = next(w_reader)
-            w_nb_words_expected = len(w_first_line)
-
-            # Read the other lines
+            w_reader = csv.DictReader(w_file, delimiter=self.__m_delimiter, quotechar="\"")
             w_index_line = 0
-            w_result = True
-            for w_line in w_reader:
+            for w_row in w_reader:
                 # Fill the data
-                if len(w_line) == w_nb_words_expected:
-                    self._m_data[w_index_line] = {}
-                    for w_index_column in range(w_nb_words_expected):
-                        self._m_data[w_index_line][w_index_column] = w_line[w_index_column]
+                self._m_data[w_index_line] = w_row
+                w_index_line += 1
 
-                # Line error
-                else:
-                    self._m_data.clear()
-                    w_result = False
-                    break
-
-            if w_result:
-                w_result = bool(self._m_data)
+            w_result = bool(self._m_data)
 
         return w_result
