@@ -1,4 +1,5 @@
-from transformers import PegasusForConditionalGeneration, PegasusTokenizer
+import torch
+from transformers import PegasusForConditionalGeneration, AutoTokenizer, AutoConfig
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import re
 import emoji
@@ -9,25 +10,12 @@ import tweepy
 from Common import Credentials
 
 
-def summarization(data):
-    tokenizer = PegasusTokenizer.from_pretrained("google/pegasus-xsum")
-    model = PegasusForConditionalGeneration.from_pretrained("google/pegasus-xsum")
-    tokens = tokenizer(data, truncation=True, padding="longest", return_tensors="pt")
-    summary = model.generate(**tokens)
-    text = tokenizer.decode(summary[0])
-    return text
-
- 
-def give_emoji_free_text(ai_text: str) -> str:
-    return emoji.get_emoji_regexp().sub(r"", ai_text)
-
-
 def simplify(ai_text: str) -> str:
     return unicodedata.normalize('NFD', ai_text).encode('ascii', 'ignore').decode("utf-8")
 
 
 def data_cleaning(ai_data: str):
-    data = give_emoji_free_text(simplify(ai_data))
+    data = emoji.get_emoji_regexp().sub(r"", simplify(ai_data))
     return re.sub(r'''(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))''', " ", data)
 
 
@@ -53,3 +41,17 @@ def top_trends(ai_country: str, ai_credentials: Credentials) -> list:
             break
 
     return w_top_10_trends
+
+
+def summarization(data) -> str:
+    tokenizer = AutoTokenizer.from_pretrained("./models/tokenizer")
+    model = PegasusForConditionalGeneration(AutoConfig.from_pretrained("./models/pegasus-quantized-config"))
+    
+    reconstructed_quantized_model = torch.quantization.quantize_dynamic(
+        model, {torch.nn.Linear}, dtype=torch.qint8
+    )
+    reconstructed_quantized_model.load_state_dict(torch.load("./models/pegasus-quantized.pt"))
+    
+    tokens = tokenizer(data, truncation=True, padding="longest", return_tensors="pt")
+    text = tokenizer.decode(reconstructed_quantized_model.generate(**tokens)[0])
+    return text.replace("<pad>", "").replace("</s>", "")

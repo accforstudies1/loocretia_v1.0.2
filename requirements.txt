@@ -1,6 +1,6 @@
+argon2-cffi==21.3.0
 absl-py==1.0.0
 altair==4.2.0
-argon2-cffi==21.3.0
 argon2-cffi-bindings==21.2.0
 asttokens==2.0.5
 astunparse==1.6.3
@@ -48,9 +48,8 @@ ipywidgets==7.7.0
 jedi==0.18.1
 Jinja2==3.1.1
 joblib==1.1.0
-jsonschema==4.4.0
 jupyter-client==7.2.2
-jupyter-core>=4.9.2
+jupyter-core==4.9.2
 jupyterlab-pygments==0.2.2
 jupyterlab-widgets==1.1.0
 keras==2.8.0
@@ -89,7 +88,6 @@ pyarrow==7.0.0
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser==2.21
-pydantic>=1.8.2
 pydeck==0.7.1
 Pygments==2.11.2
 Pympler==1.0.1
@@ -98,8 +96,6 @@ pyrsistent==0.18.1
 python-dateutil==2.8.2
 pytz==2022.1
 pytz-deprecation-shim==0.1.0.post0
-pywin32==303
-pywinpty==2.0.5
 PyYAML==6.0
 pyzmq==22.3.0
 regex==2022.3.15
@@ -114,7 +110,8 @@ six==1.16.0
 smart-open==5.2.1
 smmap==5.0.0
 soupsieve==2.3.2.post1
-spacy==3.2.4
+spacy>=3.0.0,<4.0.0
+https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.0.0/en_core_web_sm-3.0.0.tar.gz#egg=en_core_web_sm
 spacy-legacy==3.0.9
 spacy-loggers==1.0.2
 srsly==2.4.3
@@ -133,13 +130,16 @@ tinycss2==1.1.1
 tokenizers==0.12.1
 toml==0.10.2
 toolz==0.11.2
+torch==1.10.1 
+torchvision==0.11.2 
+torchaudio==0.10.1
 tornado==6.1
 tqdm==4.64.0
 traitlets==5.1.1
 transformers==4.18.0
 tweepy==4.8.0
 typer==0.3.0
-typing_extensions==4.2.0
+typing-extensions>=3.7.4.3
 tzdata==2022.1
 tzlocal==4.2
 urllib3==1.26.9
