@@ -5,7 +5,8 @@ import emoji
 import unicodedata
 import wikipedia
 import tweepy
-import credentials
+
+from Common import Credentials
 
 
 def summarization(data):
@@ -38,27 +39,17 @@ def sentiment_scores(sentence: str) -> dict:
     return SentimentIntensityAnalyzer().polarity_scores(sentence)
     
 
-def top_trends(ai_country: str):
-
+def top_trends(ai_country: str, ai_credentials: Credentials) -> list:
     # Retrieve API with user credentials
     # *************************************
-    auth = tweepy.OAuth1UserHandler(credentials.consumer_key, credentials.consumer_secret)
-    auth.set_access_token(credentials.access_token, credentials.access_token_secret)
-    api = tweepy.API(auth)
-    all_trends = api.available_trends()
+    w_auth = tweepy.OAuth1UserHandler(ai_credentials.user_key, ai_credentials.user_secret)
+    w_auth.set_access_token(ai_credentials.access_token, ai_credentials.access_token_secret)
+    w_api = tweepy.API(w_auth)
+    w_top_10_trends = []
 
-    
-    for trend in all_trends:
-        if trend['country'] == country:
-            woeid = trend['woeid']
-            trends = api.get_place_trends(id = woeid)
-            top_10_trends = []
-            i = 0
-            for value in trends:
-                for trend in value['trends']:
-                    if i >= 10:
-                        exit
-                    else:
-                        top_10_trends.append(trend['name'])
-                        i = i+1
-            return top_10_trends
+    for trend in w_api.available_trends():
+        if trend['country'] == ai_country:
+            w_top_10_trends = [w_value["name"] for w_value in w_api.get_place_trends(id=trend['woeid']).values()[:10]]
+            break
+
+    return w_top_10_trends

@@ -27,15 +27,16 @@ class Settings:
     #   Static methods
     # *******************
     @classmethod
-    def instance(cls):
+    def instance(cls, ai_config_file_path: str = "Config.json"):
         if cls.__DefaultInstance is None:
             cls.__DefaultInstance = cls.__new__(cls)
+            cls.__DefaultInstance.__init__(ai_config_file_path)
         return cls.__DefaultInstance
 
     # ******************
     #   Constructor
     # ******************
-    def __init__(self, ai_config_file_path: str = "Config.json"):
+    def __init__(self, ai_config_file_path: str):
         # Members
         # **************
         self.__m_config_file_path = ai_config_file_path
