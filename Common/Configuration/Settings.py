@@ -7,6 +7,7 @@
 
 import json
 import os
+import logging
 
 
 class Settings:
@@ -42,6 +43,13 @@ class Settings:
         self.__m_config_file_path = ai_config_file_path
         self.__m_configuration = {}
         self.__m_is_valid = False
+
+        # Configure the logger
+        self.__m_logger = logging.getLogger(__name__)
+        self.__m_logger.setLevel(logging.DEBUG)
+        w_console_handler = logging.StreamHandler()
+        w_console_handler.setFormatter(logging.Formatter("%(asctime)s | %(name)s | %(levelname)s | %(message)s"))
+        self.__m_logger.addHandler(w_console_handler)
 
     # ***************
     #   Getter
@@ -81,7 +89,7 @@ class Settings:
                         self.__m_configuration = w_json_data[Settings.__Key]
                         self.__m_is_valid = True
             else:
-                raise ValueError(f"The file path {w_file_path} is not a file")
+                self.__m_logger.error(f"The file path {w_file_path} is not a file")
 
         return self.__m_is_valid
 

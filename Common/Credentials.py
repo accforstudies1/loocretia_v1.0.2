@@ -6,6 +6,7 @@
 # *********************************
 
 from Common.Configuration import Settings
+import logging
 
 
 class Credentials:
@@ -16,7 +17,7 @@ class Credentials:
     # ******************
     #   Constructor
     # *******************
-    def __init__(self, ai_read_from_default_config: bool = True):
+    def __init__(self, ai_settings: Settings = Settings.instance()):
         # Members
         # ***********
         self.__m_user_key = ""
@@ -25,9 +26,15 @@ class Credentials:
         self.__m_access_token_secret = ""
         self.__m_is_valid = False
 
-        # Load from default value
-        if ai_read_from_default_config:
-            self.__load_from_default_config()
+        # Configure the logger
+        self.__m_logger = logging.getLogger(__name__)
+        self.__m_logger.setLevel(logging.DEBUG)
+        w_console_handler = logging.StreamHandler()
+        w_console_handler.setFormatter(logging.Formatter("%(asctime)s | %(name)s | %(levelname)s | %(message)s"))
+        self.__m_logger.addHandler(w_console_handler)
+
+        # Load from config
+        self.__load_from_config(ai_settings)
 
     # *********************
     #   Getter / Setter
@@ -47,6 +54,10 @@ class Credentials:
     @property
     def access_token_secret(self) -> str:
         return self.__m_access_token_secret
+
+    @property
+    def is_valid(self) -> bool:
+        return self.__m_is_valid
 
     @user_key.setter
     def user_key(self, ai_user_key: str):
@@ -68,6 +79,32 @@ class Credentials:
         if bool(ai_token_secret):
             self.__m_access_token_secret = ai_token_secret
 
+    # *********************
+    #   Operations
+    # **********************
+    def validate(self):
+        """
+        Validate the current credentials (check if each field is not empty)
+        :return: True if it has been validated
+        """
+        self.__m_is_valid = bool(self.__m_user_secret) and bool(self.__m_user_key) \
+            and bool(self.__m_access_token) and bool(self.__m_access_token_secret)
+
+        return self.__m_is_valid
+
+    # ***********************
+    #   Operator overload
+    # ***********************
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Credentials):
+            return False
+
+        return self.__m_user_secret == other.__m_user_secret \
+            and self.__m_user_secret == other.__m_user_secret \
+            and self.__m_access_token == other.__m_access_token \
+            and self.__m_access_token_secret == other.__m_access_token_secret \
+            and self.__m_is_valid == other.__m_is_valid
+
     # ********************
     #  Private methods
     # ********************
@@ -87,39 +124,43 @@ class Credentials:
 
         return w_value
 
-    def __load_from_default_config(self):
+    def __load_from_config(self, ai_settings: Settings) -> bool:
         """
-        Load credentials from default config
-        :return:
+        Load credentials from settings
+        :param ai_settings:
+        :return: True if the credentials has been loaded from Settings
         """
-        w_configuration_instance = Settings.instance()
 
         # Load each property
         # **********************
-        self.__m_is_valid = True
+        if ai_settings.read():
+            self.__m_is_valid = True
 
-        # Consumer part
-        w_consumer_dict = w_configuration_instance.get("consumer")
-        if type(w_consumer_dict) is dict:
-            if {"key", "secret"} <= w_consumer_dict.keys():
-                self.__m_user_key = self.__check_value_type(w_consumer_dict["key"], str, "")
-                self.__m_user_secret = self.__check_value_type(w_consumer_dict["secret"], str, "")
-                print(f"User key : {self.__m_user_key}, User Secret : {self.__m_user_secret}")
-                self.__m_is_valid &= bool(self.__m_user_secret) and bool(self.__m_user_secret)
+            # Consumer part
+            w_consumer_dict = ai_settings.get("consumer")
+            if type(w_consumer_dict) is dict:
+                if {"key", "secret"} <= w_consumer_dict.keys():
+                    self.__m_user_key = self.__check_value_type(w_consumer_dict["key"], str, "")
+                    self.__m_user_secret = self.__check_value_type(w_consumer_dict["secret"], str, "")
+                    self.__m_is_valid &= bool(self.__m_user_secret) and bool(self.__m_user_secret)
+                else:
+                    self.__m_logger.error("Consumer key has not been found")
+                    self.__m_is_valid = False
             else:
-                print("Consumer key has not been found")
                 self.__m_is_valid = False
+
+            # Token part
+            if self.__m_is_valid:
+                w_token_dict = ai_settings.get("token")
+                if type(w_token_dict) is dict:
+                    if {"access", "access_secret"} <= w_token_dict.keys():
+                        self.__m_access_token = self.__check_value_type(w_token_dict["access"], str, "")
+                        self.__m_access_token_secret = self.__check_value_type(w_token_dict["access_secret"], str, "")
+                        self.__m_is_valid &= bool(self.__m_access_token) and bool(self.__m_access_token_secret)
+                else:
+                    self.__m_is_valid = False
+                    self.__m_logger.error("Token key has not been found")
         else:
-            self.__m_is_valid = False
+            self.__m_logger.error("Settings are not valid")
 
-        # Token part
-        if self.__m_is_valid:
-            w_token_dict = w_configuration_instance.get("token")
-            if type(w_token_dict) is dict:
-                if {"access", "access_secret"} <= w_token_dict.keys():
-                    self.__m_access_token = self.__check_value_type(w_token_dict["access"], str, "")
-                    self.__m_access_token_secret = self.__check_value_type(w_token_dict["access_secret"], str, "")
-                    self.__m_is_valid &= bool(self.__m_access_token) and bool(self.__m_access_token_secret)
-            else:
-                self.__m_is_valid = False
-                print("Token key has not been found")
+        return self.__m_is_valid

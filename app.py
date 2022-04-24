@@ -18,6 +18,7 @@ warnings.simplefilter("ignore")
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 nlp = spacy.load("en_core_web_sm")
+credentials = Credentials()
 
 st.markdown(f'<h1 style="color:#3D3D39;font-size:70px;">{"Loocretia"}</h1>', unsafe_allow_html=True)
 
@@ -135,7 +136,7 @@ with st.sidebar:
             w_countries_selected = st.multiselect('Select countries [Top trending]', w_countries.values)
 
             if st.form_submit_button(label='Submit'):
-                st.dataframe(pd.DataFrame(top_trends(w_countries.get_id(w_countries_selected[0]), Credentials()),
+                st.dataframe(pd.DataFrame(top_trends(w_countries.get_id(w_countries_selected[0]), credentials),
                                           columns=['Trendings']))
         else:
             print("Cannot read the csv containing the countries")
